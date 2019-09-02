@@ -43,11 +43,9 @@ class PinDataService {
                 return
         }
         
-        // 1
         let managedContext =
             appDelegate.persistentContainer.viewContext
         
-        // 2
         let entity =
             NSEntityDescription.entity(forEntityName: "Pin",
                                        in: managedContext)!
@@ -55,11 +53,9 @@ class PinDataService {
         let pin = NSManagedObject(entity: entity,
                                   insertInto: managedContext)
         
-        // 3
         pin.setValue(lat, forKeyPath: "latitude")
         pin.setValue(long, forKeyPath: "longitude")
-        
-        // 4
+      
         do {
             try managedContext.save()
             pins.append(pin as! Pin)

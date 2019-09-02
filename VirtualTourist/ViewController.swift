@@ -10,18 +10,28 @@ import UIKit
 import MapKit
 import CoreData
 
-class ViewController: UIViewController {
-
+class ViewController: UIViewController, CompletionProtocol {
+    func completed(message: String) {
+        print(message)
+    }
+    
     @IBOutlet weak var mapView: MKMapView!
     
     var pins = [Pin]()
     let viewModel = PinDataService()
+    let networkManager = NetworkManager()
+    // Create User Defaults to save zoom and location
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         title = "Virtual tourist"
         mapView.delegate = self
+        networkManager.delegate = self
+        
+        networkManager.getNewPhotos(page: 1) { result in
+            print(result)
+        }
         
         pins = viewModel.pins
         for pin in pins {
