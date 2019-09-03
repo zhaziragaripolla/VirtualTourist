@@ -6,9 +6,9 @@
 //  Copyright © 2019 Zhazira Garipolla. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
-enum NetworkResponse:String {
+enum NetworkResponse: String {
     case success
     case authenticationError = "You need to be authenticated first."
     case badRequest = "Bad request"
@@ -24,15 +24,17 @@ enum Result<String>{
 }
 
 protocol CompletionProtocol: class {
-    func completed(message: String)
+    func completed(data: Data)
 }
 
 class NetworkManager {
     let router = Router<FlickrApi>()
     weak var delegate: CompletionProtocol?
     
-    func getNewPhotos(page: Int, completion: @escaping (String)-> ()){
-        router.request(.search(lat: 0, long: 0, page: 1)) { data, response, error in
+    func searchPhotos(page: Int, lat: Float, long: Float, completion: @escaping ([Photo]?)-> ()){
+        let request = router.buildRequest(from: .search(long: long, lat: lat, page: 1))
+        print(request.url!)
+        router.makeRequest(request) { data, response, error in
                         if error != nil {
 //                completion(nil, "Please check your network connection.")
             }
@@ -47,11 +49,8 @@ class NetworkManager {
                     }
                     do {
                         let decodedData = try JSONDecoder().decode(SearchResponse.self, from: responseData)
-                        print(decodedData.photos.total)
-                        completion("Success")
-//                        print(jsonData)
-//                        let apiResponse =
-//                        completion(apiResponse.movies,nil)
+                        completion(decodedData.photos?.photo)
+
                     } catch {
                         print(error)
 //                        completion(nil, NetworkResponse.unableToDecode.rawValue)
@@ -64,7 +63,20 @@ class NetworkManager {
         }
     }
     
-    fileprivate func handleNetworkResponse(_ response: HTTPURLResponse) -> Result<String>{
+    func getImages(photo: Photo, completion: @escaping (Data?)->()) {
+        let request = router.buildRequest(from: .getImage(photo: photo))
+        print(request.url!)
+        DispatchQueue.global().async {
+            let data = try? Data(contentsOf: request.url!)
+            DispatchQueue.main.async {
+                completion(data)
+                print("Image fetched")
+                self.delegate?.completed(data: data!)
+            }
+        }
+    }
+    
+     fileprivate func handleNetworkResponse(_ response: HTTPURLResponse) -> Result<String>{
         switch response.statusCode {
         case 200...299: return .success
         case 401...500: return .failure(NetworkResponse.authenticationError.rawValue)

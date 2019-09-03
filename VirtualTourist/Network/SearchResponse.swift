@@ -10,11 +10,11 @@ import Foundation
 
 
 struct SearchResponse: Codable {
-    let photos: Photos
+    let photos: PhotoResponse?
     let stat: String
 }
 
-struct Photos: Codable {
+struct PhotoResponse: Codable {
     let page: Int
     let pages: Int
     let perpage: Int

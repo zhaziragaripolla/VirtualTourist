@@ -25,7 +25,7 @@ protocol EndpointType {
     var path: String {get}
     var method: HTTPMethod {get}
     var headers: HTTPHeaders? {get}
-    var task: HTTPQueryParameters {get}
+    var task: HTTPQueryParameters? {get}
 }
 
 class NetworkService {
@@ -36,25 +36,35 @@ public enum FlickrMethod: String {
     case search = "flickr.photos.search"
 }
 
-public enum FlickrApi {
-    case search(lat: Float, long: Float, page: Int)
+enum FlickrApi {
+    case search(long: Float, lat: Float, page: Int)
+    case getImage(photo: Photo)
 }
 
+
 extension FlickrApi: EndpointType {
-    var task: HTTPQueryParameters {
+    var task: HTTPQueryParameters? {
         switch self {
-        case .search(let lat, let long, let page):
+        case .search(let long, let lat, let page):
             return ["method": FlickrMethod.search.rawValue,
                     "api_key": APIKey.apiKey,
-                    "bbox" : "\(55),\(8),\(58),\(13)",
+                    "bbox" : "\(long),\(lat),180,90",
                     "format" : "json",
                     "nojsoncallback" : "1"
             ]
+        case .getImage:
+            return nil
         }
     }
     
     var baseUrl: URL {
-        return URL(string: "https://api.flickr.com/services/rest/")!
+        switch self {
+        case .search:
+            return URL(string: "https://api.flickr.com/services/rest/")!
+        case .getImage(let photo):
+            return URL(string: "https://farm\(photo.farm).staticflickr.com/\(photo.server)/\(photo.id)_\(photo.secret)_m.jpg")!
+        }
+        
     }
 
     var path: String {
@@ -65,8 +75,8 @@ extension FlickrApi: EndpointType {
         switch self {
         case .search:
             return .GET
-        default:
-            break
+        case .getImage:
+            return .GET
         }
     }
     

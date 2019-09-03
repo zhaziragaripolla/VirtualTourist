@@ -12,24 +12,20 @@ public typealias NetworkRouterCompletion = (_ data: Data?,_ response: URLRespons
 
 protocol NetworkRouter: class {
     associatedtype EndPoint: EndpointType
-    func request(_ route: EndPoint, completion: @escaping NetworkRouterCompletion)
+    func makeRequest(_ request: URLRequest, completion: @escaping NetworkRouterCompletion)
     func cancel()
 }
 
 class Router<EndPoint: EndpointType>: NetworkRouter {
+ 
     private var task: URLSessionTask?
-    
-    func request(_ route: EndPoint, completion: @escaping NetworkRouterCompletion) {
+
+    func makeRequest(_ request: URLRequest, completion: @escaping NetworkRouterCompletion) {
         let session = URLSession.shared
-        do {
-            let request = try self.buildRequest(from: route)
-//            NetworkLogger.log(request: request)
-            task = session.dataTask(with: request, completionHandler: { data, response, error in
-                completion(data, response, error)
-            })
-        } catch {
-            completion(nil, nil, error)
-        }
+        
+        task = session.dataTask(with: request, completionHandler: { data, response, error in
+            completion(data, response, error)
+        })
         self.task?.resume()
     }
     
@@ -37,21 +33,13 @@ class Router<EndPoint: EndpointType>: NetworkRouter {
         self.task?.cancel()
     }
     
-    fileprivate func buildRequest(from route: EndPoint) throws -> URLRequest {
+    func buildRequest(from route: EndPoint)-> URLRequest {
         
         var request = URLRequest(url: route.baseUrl.appendingPathComponent(route.path),
                                  cachePolicy: .reloadIgnoringLocalAndRemoteCacheData,
                                  timeoutInterval: 10.0)
-        
         request.httpMethod = route.method.rawValue
         setQueryParameters(queryParameters: route.task, request: &request)
-//        switch route.task {
-//        case .request:
-//            break
-//        case .requestParameters(let queryParameters):
-//            setQueryParameters(queryParameters: queryParameters, request: &request)
-//        }
-        print(request.url)
         return request
     }
     
@@ -72,15 +60,7 @@ class Router<EndPoint: EndpointType>: NetworkRouter {
             request.url = unwrappedURL
         }
     }
-    
-//    fileprivate func setPathComponents(pathComponents: [String], request: inout URLRequest) {
-//        // TODO: fix
-//
-//        pathComponents.forEach( {
-//            request.url?.appendingPathComponent($0)
-//        })
-//    }
-    
+
     fileprivate func addAdditionalHeaders(_ additionalHeaders: HTTPHeaders?, request: inout URLRequest) {
         guard let headers = additionalHeaders else { return }
         for (key, value) in headers {

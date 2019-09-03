@@ -9,13 +9,29 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "VirtualTourist/Network/NetworkManager.swift"
-            timestampString = "589111098.603496"
+            filePath = "VirtualTourist/View Models/MapViewModel.swift"
+            timestampString = "589190676.690712"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "36"
-            endingLineNumber = "36"
-            landmarkName = "getNewPhotos(page:completion:)"
+            startingLineNumber = "35"
+            endingLineNumber = "35"
+            landmarkName = "fetchSavedPins()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "VirtualTourist/View Models/MapViewModel.swift"
+            timestampString = "589190676.691427"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "48"
+            endingLineNumber = "48"
+            landmarkName = "savePin(longitude:latitude:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
