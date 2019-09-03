@@ -50,7 +50,9 @@ extension FlickrApi: EndpointType {
                     "api_key": APIKey.apiKey,
                     "bbox" : "\(long),\(lat),180,90",
                     "format" : "json",
-                    "nojsoncallback" : "1"
+                    "nojsoncallback" : "1",
+                    "page" : "\(page)",
+                    "per_page" : "50"
             ]
         case .getImage:
             return nil

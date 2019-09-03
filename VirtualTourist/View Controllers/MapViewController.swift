@@ -12,8 +12,14 @@ import MapKit
 class MapViewController: UIViewController {
 
     @IBOutlet weak var mapView: MKMapView!
-
+    @IBOutlet weak var editItem: UIBarButtonItem!
     public var viewModel: MapViewModel?
+    
+    private var isEditingMode = false {
+        didSet {
+            configureView()
+        }
+    }
     // Create User Defaults to save zoom and location
     
     override func viewDidLoad() {
@@ -23,6 +29,14 @@ class MapViewController: UIViewController {
         mapView.delegate = self
         
         viewModel?.fetchSavedPins()
+    }
+    
+    func configureView() {
+        editItem.title = isEditingMode ? "Done" : "Edit"
+    }
+    
+    @IBAction func didTapEditItem(_ sender: Any) {
+        isEditingMode = !isEditingMode
     }
     
     @IBAction func didLongTap(_ gestureRecognizer: UILongPressGestureRecognizer) {
@@ -64,18 +78,28 @@ extension MapViewController: MKMapViewDelegate {
     }
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-        if let coordinate = view.annotation?.coordinate,
-            let vm = viewModel?.getDetailView(longitude: Float(coordinate.longitude), latitude: Float(coordinate.latitude)) {
-            let vc = SampleViewController()
-            vc.viewModel = vm
-            navigationController?.pushViewController(vc, animated: true)
-        }
         
+        if isEditingMode, let coordinate = view.annotation?.coordinate {
+          viewModel?.deletePin(longitude: Float(coordinate.longitude), latitude: Float(coordinate.latitude))
+            mapView.removeAnnotation(view.annotation!)
+        }
+        else {
+            if let coordinate = view.annotation?.coordinate,
+                let vm = viewModel?.getDetailView(longitude: Float(coordinate.longitude), latitude: Float(coordinate.latitude)) {
+                let vc = SampleViewController()
+                vc.viewModel = vm
+                navigationController?.pushViewController(vc, animated: true)
+            }
+        }
     }
     
 }
 
 extension MapViewController: PinDataServiceProtocol, AlertShowerProtocol {
+    func reloadData() {
+        mapView.reloadInputViews()
+    }
+    
     func showAlert(with message: String) {
         // TODO: show alert
     }

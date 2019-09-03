@@ -35,8 +35,15 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
-                    <navigationItem key="navigationItem" id="P1q-Jh-h6v"/>
+                    <navigationItem key="navigationItem" id="P1q-Jh-h6v">
+                        <barButtonItem key="rightBarButtonItem" title="Edit" id="KcM-sT-cSv">
+                            <connections>
+                                <action selector="didTapEditItem:" destination="BYZ-38-t0r" id="da1-jM-zbT"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
+                        <outlet property="editItem" destination="KcM-sT-cSv" id="4kO-Xu-Drh"/>
                         <outlet property="mapView" destination="2OV-SG-r04" id="sqc-Nl-Tkr"/>
                     </connections>
                 </viewController>

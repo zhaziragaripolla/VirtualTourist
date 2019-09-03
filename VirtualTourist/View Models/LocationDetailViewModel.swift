@@ -44,6 +44,7 @@ class LocationDetailViewModel {
             print("Found \(photos.count) saved photos associated with pin)")
         }
         else {
+            print("Loading photos from Flickr API")
             networkManager.searchPhotos(page: currentPage, lat: currentPin.latitude, long: currentPin.longitude, completion: {[weak self] photos in
                 guard let photos = photos else {
                     print("No photos")
@@ -73,6 +74,14 @@ class LocationDetailViewModel {
                 self?.images.append(UIImage(data: unwrappedData)!)
             }
         })
+    }
+    
+    
+    func deleteImages(at indices: [Int]) {
+        for index in 0..<indices.count {
+            images.remove(at: index)
+        }
+        delegate?.reloadData()
     }
     
 }

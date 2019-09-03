@@ -10,8 +10,14 @@ import UIKit
 
 class SampleViewController: UIViewController {
 
+    var deleteItem: UIBarButtonItem?
     var viewModel: LocationDetailViewModel!
     
+    private var selectedIndices: [Int] = [] {
+        didSet {
+            configureView()
+        }
+    }
     private let itemsPerRow: CGFloat = 2
     private let spacing: CGFloat = 16.0
     private let sectionInsets = UIEdgeInsets(top: 0,
@@ -27,6 +33,10 @@ class SampleViewController: UIViewController {
         return cv
     }()
     
+    @objc func didTapDeleteItem(_ sender: UIBarButtonItem) {
+        viewModel.deleteImages(at: selectedIndices)
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
@@ -38,12 +48,22 @@ class SampleViewController: UIViewController {
         collectionView.delegate = self
         collectionView.dataSource = self
         collectionView.backgroundColor = .white
+        collectionView.allowsMultipleSelection = true
         NSLayoutConstraint.activate([
             collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             collectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
             collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
             ])
+        
+        deleteItem = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: #selector(didTapDeleteItem(_:)))
+         navigationItem.rightBarButtonItem = deleteItem
+        deleteItem?.isEnabled = false
+        
+    }
+    
+    func configureView(){
+        deleteItem?.isEnabled = selectedIndices.count > 0 ? true : false
     }
     
 }
@@ -58,6 +78,16 @@ extension SampleViewController: UICollectionViewDelegate, UICollectionViewDataSo
         cell.bg.image = viewModel.images[indexPath.row]
         return cell
     }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        print(indexPath.row)
+        let cell = collectionView.cellForItem(at: indexPath)
+        cell?.alpha = 0.6
+        selectedIndices.append(indexPath.row)
+    }
+    
+    // MARK: Layout
+    
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         insetForSectionAt section: Int) -> UIEdgeInsets {
@@ -91,7 +121,10 @@ extension SampleViewController: LocationDetailViewModelProtocol {
     }
     
     func reloadData() {
-        collectionView.reloadData()
+        DispatchQueue.main.async {
+            self.collectionView.reloadData()
+        }
+        
     }
     
     

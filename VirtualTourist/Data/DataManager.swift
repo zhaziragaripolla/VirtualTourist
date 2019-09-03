@@ -50,6 +50,11 @@ class DataManager {
         try? viewContext.save()
     }
     
+    func deleteEntity<T: NSManagedObject>(entity: T){
+        viewContext.delete(entity)
+        try? viewContext.save()
+    }
+    
     func findEntity<T: NSManagedObject>(entityName: String, lat: Float, long: Float)-> [T]? {
         let fetchRequest = NSFetchRequest<T>(entityName: entityName)
 //        let predicate = NSPredicate(format: "latitude == %f AND longitude == %f", lat, long)
@@ -59,21 +64,9 @@ class DataManager {
         var result: [T]?
         do {
             result = try viewContext.fetch(fetchRequest)
-            print(result?.count)
-            
         } catch let error as NSError {
             print("Could not fetch \(error), \(error.userInfo)")
         }
-        catch {
-            print(error)
-        }
-//        persistentContainer.performBackgroundTask({ context in
-//            do {
-//                result = try context.fetch(fetchRequest)
-//            } catch let error as NSError {
-//                print("Could not fetch \(error), \(error.userInfo)")
-//            }
-//        })
         return result
     }
 }

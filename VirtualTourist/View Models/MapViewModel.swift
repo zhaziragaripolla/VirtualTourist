@@ -12,6 +12,7 @@ import CoreData
 
 protocol PinDataServiceProtocol: class {
     func savedPinsFetched(pins: [Pin])
+    func reloadData()
 }
 
 protocol AlertShowerProtocol: class {
@@ -28,7 +29,6 @@ class MapViewModel {
     init(fetcherDelegate: PinDataServiceProtocol, alertDelegate: AlertShowerProtocol ) {
         self.fetcherDelegate = fetcherDelegate
         self.alertDelegate = alertDelegate
-      
     }
     
     public func fetchSavedPins() {
@@ -49,15 +49,25 @@ class MapViewModel {
     }
     
     public func getDetailView(longitude: Float, latitude: Float)-> LocationDetailViewModel? {
-        guard let pins = dataManager?.findEntity(entityName: "Pin", lat: latitude, long: longitude) as? [Pin] else {
-                print("No pins with \(latitude) \(longitude) found")
-                return nil
-        }
-        print("Found \(pins.count) pins with  \(latitude) \(longitude)")
-        
+        guard let pin = findPin(longitude: longitude, latitude: latitude)?.first else { return nil}
         let vm = LocationDetailViewModel()
         vm.dataManager = dataManager
-        vm.currentPin = pins.first
+        vm.currentPin = pin
         return vm
+    }
+    
+    private func findPin(longitude: Float, latitude: Float)-> [Pin]? {
+        guard let pins = dataManager?.findEntity(entityName: "Pin", lat: latitude, long: longitude) as? [Pin], pins.count > 0 else {
+            print("No pins with \(latitude) \(longitude) found")
+            return nil
+        }
+        print("Found \(pins.count) pins with  \(latitude) \(longitude)")
+        return pins
+    }
+    
+    public func deletePin(longitude: Float, latitude: Float) {
+        guard let pin = findPin(longitude: longitude, latitude: latitude)?.first else { return }
+        dataManager?.deleteEntity(entity: pin)
+        fetcherDelegate?.reloadData()
     }
 }
