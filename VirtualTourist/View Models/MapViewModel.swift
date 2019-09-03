@@ -47,4 +47,17 @@ class MapViewModel {
         print("saved")
         dataManager?.saveEntity(entity: Pin.self, with: attributes)
     }
+    
+    public func getDetailView(longitude: Float, latitude: Float)-> LocationDetailViewModel? {
+        guard let pins = dataManager?.findEntity(entityName: "Pin", lat: latitude, long: longitude) as? [Pin] else {
+                print("No pins with \(latitude) \(longitude) found")
+                return nil
+        }
+        print("Found \(pins.count) pins with  \(latitude) \(longitude)")
+        
+        let vm = LocationDetailViewModel()
+        vm.dataManager = dataManager
+        vm.currentPin = pins.first
+        return vm
+    }
 }

@@ -10,7 +10,7 @@ import UIKit
 
 class SampleViewController: UIViewController {
 
-    var currentPin: Pin?
+    var viewModel: LocationDetailViewModel!
     
     private let itemsPerRow: CGFloat = 2
     private let spacing: CGFloat = 16.0
@@ -31,6 +31,9 @@ class SampleViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .white
         
+        viewModel?.delegate = self
+        viewModel?.searchPhotos()
+        
         view.addSubview(collectionView)
         collectionView.delegate = self
         collectionView.dataSource = self
@@ -47,14 +50,12 @@ class SampleViewController: UIViewController {
 
 extension SampleViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 1
-        
-//        return currentPin.
+       return viewModel.images.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! FlickrCollectionViewCell
-//        cell.bg.image = MapViewModel.shared.images[indexPath.row]
+        cell.bg.image = viewModel.images[indexPath.row]
         return cell
     }
     func collectionView(_ collectionView: UICollectionView,
@@ -77,6 +78,22 @@ extension SampleViewController: UICollectionViewDelegate, UICollectionViewDataSo
         let width = (collectionView.bounds.width - totalSpacing)/itemsPerRow
         return CGSize(width: width, height: width)
     }
+    
+}
+
+extension SampleViewController: LocationDetailViewModelProtocol {
+//    func fetchedImages(photos: [UIImage]) {
+//
+//    }
+    
+    func showAlert(message: String) {
+        print(message)
+    }
+    
+    func reloadData() {
+        collectionView.reloadData()
+    }
+    
     
 }
 

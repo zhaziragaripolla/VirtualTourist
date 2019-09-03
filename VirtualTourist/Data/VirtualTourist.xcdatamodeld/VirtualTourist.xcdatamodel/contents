@@ -6,11 +6,11 @@
         <relationship name="photo" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SavedPhoto" inverseName="pin" inverseEntity="SavedPhoto" syncable="YES"/>
     </entity>
     <entity name="SavedPhoto" representedClassName="SavedPhoto" syncable="YES" codeGenerationType="class">
-        <attribute name="image" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
+        <attribute name="image" attributeType="Binary" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
         <relationship name="pin" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Pin" inverseName="photo" inverseEntity="Pin" syncable="YES"/>
     </entity>
     <elements>
         <element name="Pin" positionX="-256.0546875" positionY="-8.51953125" width="128" height="88"/>
-        <element name="SavedPhoto" positionX="-45.16015625" positionY="79.2578125" width="128" height="73"/>
+        <element name="SavedPhoto" positionX="-45.16015625" positionY="79.2578125" width="128" height="75"/>
     </elements>
 </model>

@@ -63,6 +63,16 @@ extension MapViewController: MKMapViewDelegate {
         return myPinView
     }
     
+    func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
+        if let coordinate = view.annotation?.coordinate,
+            let vm = viewModel?.getDetailView(longitude: Float(coordinate.longitude), latitude: Float(coordinate.latitude)) {
+            let vc = SampleViewController()
+            vc.viewModel = vm
+            navigationController?.pushViewController(vc, animated: true)
+        }
+        
+    }
+    
 }
 
 extension MapViewController: PinDataServiceProtocol, AlertShowerProtocol {
@@ -75,6 +85,7 @@ extension MapViewController: PinDataServiceProtocol, AlertShowerProtocol {
             let newPin: MKPointAnnotation = MKPointAnnotation()
             let coordinate = CLLocationCoordinate2D(latitude: CLLocationDegrees(pin.latitude), longitude: CLLocationDegrees(pin.longitude))
         
+            print(coordinate.longitude, coordinate.latitude)
             // Set the coordinates.
             newPin.coordinate = coordinate
 
@@ -82,10 +93,5 @@ extension MapViewController: PinDataServiceProtocol, AlertShowerProtocol {
             mapView.addAnnotation(newPin)
         }
     }
-    
-//    func taskCompleted() {
-//        let vc = SampleViewController()
-//        navigationController?.pushViewController(vc, animated: true)
-//    }
 }
 

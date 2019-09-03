@@ -34,9 +34,9 @@ class DataManager {
     func fetchEntities<T: NSManagedObject>(entityName: String) -> [T]? {
         var result: [T]?
         let fetchRequest =
-            NSFetchRequest<NSManagedObject>(entityName: entityName)
+            NSFetchRequest<T>(entityName: entityName)
         do {
-            result = try viewContext.fetch(fetchRequest) as? [T]
+            result = try viewContext.fetch(fetchRequest)
         } catch let error as NSError {
             print("Could not fetch \(error), \(error.userInfo)")
         }
@@ -48,6 +48,33 @@ class DataManager {
         let newEntity = T(context: viewContext)
         newEntity.setValuesForKeys(attributes)
         try? viewContext.save()
+    }
+    
+    func findEntity<T: NSManagedObject>(entityName: String, lat: Float, long: Float)-> [T]? {
+        let fetchRequest = NSFetchRequest<T>(entityName: entityName)
+//        let predicate = NSPredicate(format: "latitude == %f AND longitude == %f", lat, long)
+        let predicate = NSPredicate(format: "latitude >= %lf AND latitude <= %lf", lat - 1, lat + 1)
+        print("Searching for pin : ", lat)
+        fetchRequest.predicate = predicate
+        var result: [T]?
+        do {
+            result = try viewContext.fetch(fetchRequest)
+            print(result?.count)
+            
+        } catch let error as NSError {
+            print("Could not fetch \(error), \(error.userInfo)")
+        }
+        catch {
+            print(error)
+        }
+//        persistentContainer.performBackgroundTask({ context in
+//            do {
+//                result = try context.fetch(fetchRequest)
+//            } catch let error as NSError {
+//                print("Could not fetch \(error), \(error.userInfo)")
+//            }
+//        })
+        return result
     }
 }
 

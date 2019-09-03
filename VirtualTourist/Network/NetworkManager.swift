@@ -63,7 +63,7 @@ class NetworkManager {
         }
     }
     
-    func getImages(photo: Photo, completion: @escaping (Data?)->()) {
+    func getImage(photo: Photo, completion: @escaping (Data?)->()) {
         let request = router.buildRequest(from: .getImage(photo: photo))
         print(request.url!)
         DispatchQueue.global().async {
