@@ -28,10 +28,6 @@ protocol EndpointType {
     var task: HTTPQueryParameters? {get}
 }
 
-class NetworkService {
-    
-}
-
 public enum FlickrMethod: String {
     case search = "flickr.photos.search"
 }
@@ -40,7 +36,6 @@ enum FlickrApi {
     case search(long: Float, lat: Float, page: Int)
     case getImage(photo: Photo)
 }
-
 
 extension FlickrApi: EndpointType {
     var task: HTTPQueryParameters? {

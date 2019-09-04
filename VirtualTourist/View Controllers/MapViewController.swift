@@ -42,7 +42,6 @@ class MapViewController: UIViewController {
     @IBAction func didLongTap(_ gestureRecognizer: UILongPressGestureRecognizer) {
         if gestureRecognizer.state == .began {
             self.becomeFirstResponder()
-            print("begin")
             
             let location = gestureRecognizer.location(in: mapView)
             let coordinate = mapView.convert(location, toCoordinateFrom: mapView)

@@ -2,7 +2,7 @@
 //  DataManager.swift
 //  VirtualTourist
 //
-//  Created by Zhazira Garipolla on 9/3/19.
+//  Created by Zhazira Garipolla on 9/4/19.
 //  Copyright © 2019 Zhazira Garipolla. All rights reserved.
 //
 
@@ -11,67 +11,70 @@ import CoreData
 
 class DataManager {
     
+    init() {
+        persistentContainer = NSPersistentContainer(name: "VirtualTourist")
+    }
+    
     let persistentContainer: NSPersistentContainer
     
     var viewContext: NSManagedObjectContext {
         return persistentContainer.viewContext
     }
     
-    init(modelName: String) {
-        persistentContainer = NSPersistentContainer(name: modelName)
-    }
-    
-    func load(completion: (() -> Void)? = nil) {
+    func load() {
         persistentContainer.loadPersistentStores { storeDescription, error in
             guard error == nil else {
                 fatalError(error!.localizedDescription)
             }
-            self.autoSaveViewContext()
-            completion?()
+            //            self.autoSaveViewContext()
         }
     }
     
-    func fetchEntities<T: NSManagedObject>(entityName: String) -> [T]? {
+    func savePhoto(with pin: Pin, attributes: Dictionary<String, Any>)-> SavedPhoto {
+        let newPhoto = SavedPhoto(context: viewContext)
+        newPhoto.setValuesForKeys(attributes)
+        newPhoto.pin = pin
+        try? viewContext.save()
+        return newPhoto
+    }
+    
+    func savePin(attributes: Dictionary<String, Any>) {
+        let newPin = Pin(context: viewContext)
+        newPin.setValuesForKeys(attributes)
+        try? viewContext.save()
+    }
+    
+    func fetchEntities<T>(entityName: String)-> [T]? where T : NSManagedObject{
+        let fetchRequest = NSFetchRequest<T>(entityName: entityName)
         var result: [T]?
-        let fetchRequest =
-            NSFetchRequest<T>(entityName: entityName)
         do {
             result = try viewContext.fetch(fetchRequest)
         } catch let error as NSError {
             print("Could not fetch \(error), \(error.userInfo)")
         }
+//        completion(result)
         return result
     }
     
-    
-    func saveEntity<T: NSManagedObject>(entity: T.Type, with attributes: Dictionary<String, Any>) {
-        let newEntity = T(context: viewContext)
-        newEntity.setValuesForKeys(attributes)
-        try? viewContext.save()
-    }
-    
-    func deleteEntity<T: NSManagedObject>(entity: T){
+    func deleteEntity<T>(entity: T) where T : NSManagedObject {
         viewContext.delete(entity)
         try? viewContext.save()
     }
     
-    func findEntity<T: NSManagedObject>(entityName: String, lat: Float, long: Float)-> [T]? {
-        let fetchRequest = NSFetchRequest<T>(entityName: entityName)
-//        let predicate = NSPredicate(format: "latitude == %f AND longitude == %f", lat, long)
-        let predicate = NSPredicate(format: "latitude >= %lf AND latitude <= %lf", lat - 1, lat + 1)
-        print("Searching for pin : ", lat)
+    func findPin(latitude: Float, longitude: Float)-> [Pin]? {
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")
+        let predicate = NSPredicate(format: "latitude >= %lf AND latitude <= %lf AND longitude >= %lf AND longitude <= %lf", latitude - 1, latitude + 1, longitude - 1, longitude + 1)
         fetchRequest.predicate = predicate
-        var result: [T]?
+        var result: [Pin]?
         do {
-            result = try viewContext.fetch(fetchRequest)
+            result = try viewContext.fetch(fetchRequest) as? [Pin]
         } catch let error as NSError {
             print("Could not fetch \(error), \(error.userInfo)")
         }
         return result
     }
-}
 
-extension DataManager{
+    
     func autoSaveViewContext(interval: TimeInterval = 30) {
         print("autosaving")
         
@@ -88,4 +91,5 @@ extension DataManager{
             self.autoSaveViewContext(interval: interval)
         }
     }
+    
 }

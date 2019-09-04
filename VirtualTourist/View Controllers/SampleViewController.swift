@@ -35,6 +35,7 @@ class SampleViewController: UIViewController {
     
     @objc func didTapDeleteItem(_ sender: UIBarButtonItem) {
         viewModel.deleteImages(at: selectedIndices)
+        selectedIndices.removeAll()
     }
     
     override func viewDidLoad() {
@@ -42,7 +43,7 @@ class SampleViewController: UIViewController {
         view.backgroundColor = .white
         
         viewModel?.delegate = self
-        viewModel?.searchPhotos()
+        viewModel?.loadSavedPhotos()
         
         view.addSubview(collectionView)
         collectionView.delegate = self
@@ -75,7 +76,14 @@ extension SampleViewController: UICollectionViewDelegate, UICollectionViewDataSo
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! FlickrCollectionViewCell
-        cell.bg.image = viewModel.images[indexPath.row]
+        let photo = viewModel.images[indexPath.row]
+        
+        if let data = photo.image {
+            cell.bg.image = UIImage(data: data)
+        }
+        else {
+            cell.bg.image = UIImage(named: "placeholder")
+        }
         return cell
     }
     
@@ -120,7 +128,7 @@ extension SampleViewController: LocationDetailViewModelProtocol {
         print(message)
     }
     
-    func reloadData() {
+    func reloadRows() {
         DispatchQueue.main.async {
             self.collectionView.reloadData()
         }

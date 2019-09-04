@@ -11,21 +11,25 @@ import UIKit
 protocol LocationDetailViewModelProtocol: class {
 //    func fetchedImages(photos: [UIImage])
     func showAlert(message: String)
-    func reloadData()
+    func reloadRows()
 }
 
 class LocationDetailViewModel {
     
     public var currentPin: Pin!
+//    private var photos: [SavedPhoto] = []
     public var dataManager: DataManager!
+    
+//    let rep = PhotoAlbumRepository<PhotoAlbum>()
+    
     private var currentPage: Int = 1
-    var images: [UIImage] = [] {
+    var images: [SavedPhoto] = [] {
         didSet {
-            delegate?.reloadData()
+            delegate?.reloadRows()
         }
     }
     
-    let networkManager = NetworkManager()
+    private let networkManager = NetworkManager()
     
     weak var delegate: LocationDetailViewModelProtocol?
     
@@ -33,55 +37,64 @@ class LocationDetailViewModel {
 //        self.delegate = delegate
 //    }
     
-    func searchPhotos() {
-        
+    public func loadSavedPhotos() {
         if let photoSet = currentPin.photo, let photos = photoSet.allObjects as? [SavedPhoto], photos.count > 0 {
-            photos.forEach({
-                if let data = $0.image, let image = UIImage(data: data) {
-                    images.append(image)
-                }
-            })
-            print("Found \(photos.count) saved photos associated with pin)")
+            images = photos
+            print("Found \(photos.count) saved photos associated with pin")
         }
         else {
             print("Loading photos from Flickr API")
-            networkManager.searchPhotos(page: currentPage, lat: currentPin.latitude, long: currentPin.longitude, completion: {[weak self] photos in
-                guard let photos = photos else {
-                    print("No photos")
-                    return
-                }
-                photos.forEach({
-                    self?.downloadImage(for: $0)
-                })
-                self?.delegate?.reloadData()
-                print("Fetched \(photos.count) photos")
-            })
+            searchPhotos()
         }
         
     }
     
-    func downloadImage(for photo: Photo) {
-        networkManager.getImage(photo: photo, completion: { [weak self] data in
-            if let unwrappedData = data,
-                let image = UIImage(data: unwrappedData)?.pngData() {
-                let savedPhoto = SavedPhoto(context: (self?.dataManager.viewContext)!)
-                savedPhoto.image = image
-                try? self?.dataManager.viewContext.save()
-                self?.currentPin.addToPhoto(savedPhoto)
-                print("Image added to core data")
-//                self?.dataManager.saveEntity(entity: SavedPhoto.self, with: ["image" : image])
-//                currentPin.addToPhoto()
-                self?.images.append(UIImage(data: unwrappedData)!)
+    private func searchPhotos(){
+        networkManager.searchPhotos(page: currentPage, lat: currentPin.latitude, long: currentPin.longitude, completion: {[weak self] photos in
+            guard let photos = photos else {
+                print("No photos")
+                return
             }
+            photos.forEach({
+                self?.downloadImage(for: $0)
+                
+            })
+            self?.delegate?.reloadRows()
+            print("Fetched \(photos.count) photos")
         })
     }
     
+    private func downloadImage(for photo: Photo) {
+       
+        networkManager.getImage(photo: photo, completion: { [weak self] data in
+            if let unwrappedData = data,
+                let image = UIImage(data: unwrappedData),
+                let pin = self?.currentPin {
+                let savedImage = self?.dataManager.savePhoto(with: pin, attributes: ["image" : image.pngData()])
+                self?.images.append(savedImage!)
+                print("Image added to core data")
+            }
+        })
+        
+    }
     
-    func deleteImages(at indices: [Int]) {
+    
+    public  func deleteImages(at indices: [Int]) {
         for index in 0..<indices.count {
             images.remove(at: index)
+            dataManager.deleteEntity(entity: images[index])
         }
-        delegate?.reloadData()
+        delegate?.reloadRows()
     }
+    
+//    private func findPhoto()-> [Pin]? {
+//
+//        guard let pins = dataManager?.findEntity(entityName: "Pin", latitude: latitude, longitude: longitude) as? [Pin], pins.count > 0 else {
+//            print("No pins with \(latitude) \(longitude) found")
+//            return nil
+//        }
+//        print("Found \(pins.count) pins with  \(latitude) \(longitude)")
+//        return pins
+//    }
     
 }
