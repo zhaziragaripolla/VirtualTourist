@@ -34,7 +34,7 @@ public enum FlickrMethod: String {
 
 enum FlickrApi {
     case search(long: Float, lat: Float, page: Int)
-    case getImage(photo: Photo)
+    case getImage(photo: FlickrPhoto)
 }
 
 extension FlickrApi: EndpointType {
@@ -43,7 +43,7 @@ extension FlickrApi: EndpointType {
         case .search(let long, let lat, let page):
             return ["method": FlickrMethod.search.rawValue,
                     "api_key": APIKey.apiKey,
-                    "bbox" : "\(long),\(lat),180,90",
+                    "bbox" : "\(long - 1),\(lat - 1),\(long + 1),\(lat + 1)",
                     "format" : "json",
                     "nojsoncallback" : "1",
                     "page" : "\(page)",

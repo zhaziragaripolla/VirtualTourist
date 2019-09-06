@@ -31,8 +31,8 @@ class NetworkManager {
     let router = Router<FlickrApi>()
     weak var delegate: CompletionProtocol?
     
-    func searchPhotos(page: Int, lat: Float, long: Float, completion: @escaping ([Photo]?)-> ()){
-        let request = router.buildRequest(from: .search(long: long, lat: lat, page: 1))
+    func searchPhotos(page: Int, lat: Float, long: Float, completion: @escaping (PhotoResponse?)-> ()){
+        let request = router.buildRequest(from: .search(long: long, lat: lat, page: page))
         print(request.url!)
         router.makeRequest(request) { data, response, error in
                         if error != nil {
@@ -49,7 +49,7 @@ class NetworkManager {
                     }
                     do {
                         let decodedData = try JSONDecoder().decode(SearchResponse.self, from: responseData)
-                        completion(decodedData.photos?.photo)
+                        completion(decodedData.photos)
 
                     } catch {
                         print(error)
@@ -63,14 +63,13 @@ class NetworkManager {
         }
     }
     
-    func getImage(photo: Photo, completion: @escaping (Data?)->()) {
+    func getImage(photo: FlickrPhoto, completion: @escaping (Data?)->()) {
         let request = router.buildRequest(from: .getImage(photo: photo))
         print(request.url!)
         DispatchQueue.global().async {
             let data = try? Data(contentsOf: request.url!)
             DispatchQueue.main.async {
                 completion(data)
-                print("Image fetched")
                 self.delegate?.completed(data: data!)
             }
         }

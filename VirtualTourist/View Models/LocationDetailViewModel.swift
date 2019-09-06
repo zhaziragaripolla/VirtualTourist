@@ -9,7 +9,6 @@
 import UIKit
 
 protocol LocationDetailViewModelProtocol: class {
-//    func fetchedImages(photos: [UIImage])
     func showAlert(message: String)
     func reloadRows()
 }
@@ -17,84 +16,103 @@ protocol LocationDetailViewModelProtocol: class {
 class LocationDetailViewModel {
     
     public var currentPin: Pin!
-//    private var photos: [SavedPhoto] = []
     public var dataManager: DataManager!
+    public var isUsingSavedPhotos: Bool
     
-//    let rep = PhotoAlbumRepository<PhotoAlbum>()
+    private var currentPage: Int
+    private var totalPages: Int
     
-    private var currentPage: Int = 1
-    var images: [SavedPhoto] = [] {
-        didSet {
-            delegate?.reloadRows()
-        }
-    }
+    public var flickrPhotos: [FlickrPhoto] = []
+    public var savedPhotos: [Photo] = []
+    private var images: [UIImage] = []
     
     private let networkManager = NetworkManager()
     
     weak var delegate: LocationDetailViewModelProtocol?
     
-//    init(delegate: LocationDetailViewModelProtocol) {
-//        self.delegate = delegate
-//    }
+    init() {
+        totalPages = 1
+        isUsingSavedPhotos = false
+        currentPage = 1
+    }
     
     public func loadSavedPhotos() {
-        if let photoSet = currentPin.photo, let photos = photoSet.allObjects as? [SavedPhoto], photos.count > 0 {
-            images = photos
+        if let photoSet = currentPin.photo, let photos = photoSet.allObjects as? [Photo], photos.count > 0 {
+            savedPhotos = photos
             print("Found \(photos.count) saved photos associated with pin")
+            isUsingSavedPhotos = true
+            delegate?.reloadRows()
         }
         else {
             print("Loading photos from Flickr API")
+            isUsingSavedPhotos = false
             searchPhotos()
         }
         
     }
     
-    private func searchPhotos(){
-        networkManager.searchPhotos(page: currentPage, lat: currentPin.latitude, long: currentPin.longitude, completion: {[weak self] photos in
-            guard let photos = photos else {
+    func downloadNewData(){
+        if isUsingSavedPhotos {
+            
+        }
+        else {
+            
+        }
+    }
+    
+    func searchPhotos(){
+        images.removeAll()
+        flickrPhotos.removeAll()
+        networkManager.searchPhotos(page: currentPage, lat: currentPin.latitude, long: currentPin.longitude, completion: {[weak self] response in
+            guard let response = response else {
                 print("No photos")
                 return
             }
-            photos.forEach({
-                self?.downloadImage(for: $0)
-                
-            })
+            self?.totalPages = response.pages
+            self?.flickrPhotos = response.photo
+            self?.currentPage = Int.random(in: 1...self!.totalPages)
+            print("Random current page is ",  self?.currentPage, "/\(self?.totalPages)")
             self?.delegate?.reloadRows()
-            print("Fetched \(photos.count) photos")
+            
         })
+        
     }
     
-    private func downloadImage(for photo: Photo) {
-       
-        networkManager.getImage(photo: photo, completion: { [weak self] data in
-            if let unwrappedData = data,
-                let image = UIImage(data: unwrappedData),
-                let pin = self?.currentPin {
-                let savedImage = self?.dataManager.savePhoto(with: pin, attributes: ["image" : image.pngData()])
-                self?.images.append(savedImage!)
-                print("Image added to core data")
+    func downloadImage(for photo: FlickrPhoto, completion: @escaping (UIImage?)-> Void) {
+//        sleep(3)
+        networkManager.getImage(photo: photo, completion: { data in
+            if let unwrappedData = data, let image = UIImage(data: unwrappedData) {
+                self.images.append(image)
+                completion(image)
             }
         })
         
     }
     
     
-    public  func deleteImages(at indices: [Int]) {
-        for index in 0..<indices.count {
-            images.remove(at: index)
-            dataManager.deleteEntity(entity: images[index])
-        }
-        delegate?.reloadRows()
+    func savePhotos(){
+        images.forEach({
+            self.dataManager.savePhoto(with: currentPin, attributes: ["image" : $0.pngData()])
+        })
     }
     
-//    private func findPhoto()-> [Pin]? {
-//
-//        guard let pins = dataManager?.findEntity(entityName: "Pin", latitude: latitude, longitude: longitude) as? [Pin], pins.count > 0 else {
-//            print("No pins with \(latitude) \(longitude) found")
-//            return nil
-//        }
-//        print("Found \(pins.count) pins with  \(latitude) \(longitude)")
-//        return pins
-//    }
+    public  func deleteImages(at indices: [Int]) {
+        if isUsingSavedPhotos {
+            for index in 0..<indices.count {
+                self.dataManager.deleteEntity(entity: self.savedPhotos[index])
+                self.savedPhotos.remove(at: index)
+            }
+                delegate?.reloadRows()
+        }
+
+        else {
+            for index in 0..<indices.count {
+                flickrPhotos.remove(at: index)
+                images.remove(at: index)
+            }
+            delegate?.reloadRows()
+        }
+       
+    }
     
 }

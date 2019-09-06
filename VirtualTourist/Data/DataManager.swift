@@ -30,12 +30,11 @@ class DataManager {
         }
     }
     
-    func savePhoto(with pin: Pin, attributes: Dictionary<String, Any>)-> SavedPhoto {
-        let newPhoto = SavedPhoto(context: viewContext)
+    func savePhoto(with pin: Pin, attributes: Dictionary<String, Any>){
+        let newPhoto = Photo(context: viewContext)
         newPhoto.setValuesForKeys(attributes)
         newPhoto.pin = pin
         try? viewContext.save()
-        return newPhoto
     }
     
     func savePin(attributes: Dictionary<String, Any>) {

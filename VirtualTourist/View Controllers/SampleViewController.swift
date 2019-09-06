@@ -11,6 +11,7 @@ import UIKit
 class SampleViewController: UIViewController {
 
     var deleteItem: UIBarButtonItem?
+    var updateItem: UIBarButtonItem?
     var viewModel: LocationDetailViewModel!
     
     private var selectedIndices: [Int] = [] {
@@ -35,7 +36,19 @@ class SampleViewController: UIViewController {
     
     @objc func didTapDeleteItem(_ sender: UIBarButtonItem) {
         viewModel.deleteImages(at: selectedIndices)
+//        collectionView.deleteItems(at: selectedIndices.map({ IndexPath(row: $0, section: 0)}))
         selectedIndices.removeAll()
+//        collectionView.reloadItems(at: selectedIndices.map({ IndexPath(row: $0, section: 0)}))
+    }
+    
+    @objc func didTapReloadItem(_ sender: UIBarButtonItem){
+        viewModel.searchPhotos()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        viewModel.savePhotos()
     }
     
     override func viewDidLoad() {
@@ -49,7 +62,7 @@ class SampleViewController: UIViewController {
         collectionView.delegate = self
         collectionView.dataSource = self
         collectionView.backgroundColor = .white
-        collectionView.allowsMultipleSelection = true
+        collectionView.allowsMultipleSelection = false
         NSLayoutConstraint.activate([
             collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             collectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
@@ -58,7 +71,10 @@ class SampleViewController: UIViewController {
             ])
         
         deleteItem = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: #selector(didTapDeleteItem(_:)))
-         navigationItem.rightBarButtonItem = deleteItem
+        updateItem = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(didTapReloadItem(_:)))
+        
+        navigationItem.setRightBarButtonItems([deleteItem!, updateItem!], animated: true)
+//        navigationItem.rightBarButtonItem = deleteItem
         deleteItem?.isEnabled = false
         
     }
@@ -71,19 +87,35 @@ class SampleViewController: UIViewController {
 
 extension SampleViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-       return viewModel.images.count
+        if viewModel.isUsingSavedPhotos {
+            print("Saved Photos:", viewModel.savedPhotos.count)
+            return viewModel.savedPhotos.count
+        }
+        print("Downloaded: ", viewModel.flickrPhotos.count)
+       return viewModel.flickrPhotos.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! FlickrCollectionViewCell
-        let photo = viewModel.images[indexPath.row]
         
-        if let data = photo.image {
-            cell.bg.image = UIImage(data: data)
+        if viewModel.isUsingSavedPhotos {
+            let image = viewModel.savedPhotos[indexPath.row]
+            if let data = image.image {
+                cell.bg.image = UIImage(data: data)
+            }
+        } else {
+            let photo = viewModel.flickrPhotos[indexPath.row]
+            cell.activityIndicator.startAnimating()
+            
+            viewModel.downloadImage(for: photo, completion: { image in
+                if let image = image {
+                    cell.bg.image = image
+                }
+                cell.activityIndicator.stopAnimating()
+            })
+            
         }
-        else {
-            cell.bg.image = UIImage(named: "placeholder")
-        }
+      
         return cell
     }
     
@@ -120,9 +152,6 @@ extension SampleViewController: UICollectionViewDelegate, UICollectionViewDataSo
 }
 
 extension SampleViewController: LocationDetailViewModelProtocol {
-//    func fetchedImages(photos: [UIImage]) {
-//
-//    }
     
     func showAlert(message: String) {
         print(message)
@@ -134,8 +163,6 @@ extension SampleViewController: LocationDetailViewModelProtocol {
         }
         
     }
-    
-    
 }
 
 
