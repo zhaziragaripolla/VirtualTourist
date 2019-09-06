@@ -54,9 +54,17 @@ class LocationDetailViewModel {
     func downloadNewData(){
         if isUsingSavedPhotos {
             
+            isUsingSavedPhotos = false
+            
+            savedPhotos.forEach({
+                dataManager.deleteEntity(entity: $0)
+            })
+            
+            searchPhotos()
+            
         }
         else {
-            
+            searchPhotos()
         }
     }
     
@@ -79,7 +87,6 @@ class LocationDetailViewModel {
     }
     
     func downloadImage(for photo: FlickrPhoto, completion: @escaping (UIImage?)-> Void) {
-//        sleep(3)
         networkManager.getImage(photo: photo, completion: { data in
             if let unwrappedData = data, let image = UIImage(data: unwrappedData) {
                 self.images.append(image)
@@ -92,11 +99,15 @@ class LocationDetailViewModel {
     
     func savePhotos(){
         images.forEach({
-            self.dataManager.savePhoto(with: currentPin, attributes: ["image" : $0.pngData()])
+            self.dataManager.savePhoto(with: currentPin, attributes: ["image" : $0.pngData()!])
         })
     }
     
-    public  func deleteImages(at indices: [Int]) {
+    func updatePhotos(){
+        
+    }
+    
+    public func deleteImages(at indices: [Int]) {
         if isUsingSavedPhotos {
             for index in 0..<indices.count {
                 self.dataManager.deleteEntity(entity: self.savedPhotos[index])

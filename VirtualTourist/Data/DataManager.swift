@@ -37,6 +37,11 @@ class DataManager {
         try? viewContext.save()
     }
     
+    func updatePhoto(photo: Photo, new attributes: Dictionary<String, Any>) {
+        photo.setValuesForKeys(attributes)
+        try? viewContext.save()
+    }
+    
     func savePin(attributes: Dictionary<String, Any>) {
         let newPin = Pin(context: viewContext)
         newPin.setValuesForKeys(attributes)

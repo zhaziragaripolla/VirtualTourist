@@ -10,9 +10,9 @@ import UIKit
 
 class SampleViewController: UIViewController {
 
-    var deleteItem: UIBarButtonItem?
-    var updateItem: UIBarButtonItem?
-    var viewModel: LocationDetailViewModel!
+    private var deleteItem: UIBarButtonItem!
+    private var updateItem: UIBarButtonItem!
+    public var viewModel: LocationDetailViewModel!
     
     private var selectedIndices: [Int] = [] {
         didSet {
@@ -36,13 +36,11 @@ class SampleViewController: UIViewController {
     
     @objc func didTapDeleteItem(_ sender: UIBarButtonItem) {
         viewModel.deleteImages(at: selectedIndices)
-//        collectionView.deleteItems(at: selectedIndices.map({ IndexPath(row: $0, section: 0)}))
         selectedIndices.removeAll()
-//        collectionView.reloadItems(at: selectedIndices.map({ IndexPath(row: $0, section: 0)}))
     }
     
     @objc func didTapReloadItem(_ sender: UIBarButtonItem){
-        viewModel.searchPhotos()
+        viewModel.downloadNewData()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -74,7 +72,6 @@ class SampleViewController: UIViewController {
         updateItem = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(didTapReloadItem(_:)))
         
         navigationItem.setRightBarButtonItems([deleteItem!, updateItem!], animated: true)
-//        navigationItem.rightBarButtonItem = deleteItem
         deleteItem?.isEnabled = false
         
     }
