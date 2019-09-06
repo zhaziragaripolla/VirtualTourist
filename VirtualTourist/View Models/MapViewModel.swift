@@ -15,28 +15,21 @@ protocol PinDataServiceProtocol: class {
     func reloadData()
 }
 
-protocol AlertShowerProtocol: class {
-    func showAlert(with message: String)
-}
-
 class MapViewModel {
     
-    public var dataManager: DataManager!
+    public var dataManager: DataManager
     
     weak var fetcherDelegate: PinDataServiceProtocol?
-    weak var alertDelegate: AlertShowerProtocol?
     
-    init(fetcherDelegate: PinDataServiceProtocol, alertDelegate: AlertShowerProtocol ) {
+    init(fetcherDelegate: PinDataServiceProtocol, dataManager: DataManager) {
         self.fetcherDelegate = fetcherDelegate
-        self.alertDelegate = alertDelegate
+        self.dataManager = dataManager
     }
     
     public func fetchSavedPins() {
-        guard let savedPins = dataManager?.fetchEntities(entityName: "Pin") as? [Pin] else {
-            alertDelegate?.showAlert(with: "No saved pins found!")
+        guard let savedPins = dataManager.fetchEntities(entityName: "Pin") as? [Pin] else {
             return
         }
-        print("Found \(savedPins.count) pins")
         fetcherDelegate?.savedPinsFetched(pins: savedPins)
     }
 
@@ -44,20 +37,17 @@ class MapViewModel {
         let attributes = ["longitude": longitude,
                           "latitude" : latitude
                           ]
-        print("saved")
         dataManager.savePin(attributes: attributes)
     }
     
     public func getDetailView(longitude: Float, latitude: Float)-> LocationDetailViewModel? {
         guard let pin = findPin(longitude: longitude, latitude: latitude) else { return nil}
-        let vm = LocationDetailViewModel()
-        vm.dataManager = dataManager
-        vm.currentPin = pin
+        let vm = LocationDetailViewModel(pin: pin, dataManager: dataManager)
         return vm
     }
     
     private func findPin(longitude: Float, latitude: Float)-> Pin? {
-        guard let pins = dataManager?.findPin(latitude: latitude, longitude: longitude), pins.count > 0 else {
+        guard let pins = dataManager.findPin(latitude: latitude, longitude: longitude), pins.count > 0 else {
             print("No pins with \(latitude) \(longitude) found")
             return nil
         }
@@ -67,7 +57,7 @@ class MapViewModel {
 
     public func deletePin(longitude: Float, latitude: Float) {
         guard let pin = findPin(longitude: longitude, latitude: latitude) else { return }
-        dataManager?.deleteEntity(entity: pin)
+        dataManager.deleteEntity(entity: pin)
         
         dataManager.deleteEntity(entity: pin)
         fetcherDelegate?.reloadData()

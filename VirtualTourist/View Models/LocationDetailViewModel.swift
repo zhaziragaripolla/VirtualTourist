@@ -15,8 +15,10 @@ protocol LocationDetailViewModelProtocol: class {
 
 class LocationDetailViewModel {
     
-    public var currentPin: Pin!
-    public var dataManager: DataManager!
+    public var currentPin: Pin
+    public var dataManager: DataManager
+    
+    // Boolean variable for managing 2 datasources: Core data and Flickr API
     public var isUsingSavedPhotos: Bool
     
     private var currentPage: Int
@@ -30,7 +32,11 @@ class LocationDetailViewModel {
     
     weak var delegate: LocationDetailViewModelProtocol?
     
-    init() {
+    init(pin: Pin, dataManager: DataManager) {
+        
+        currentPin = pin
+        self.dataManager = dataManager
+        
         totalPages = 1
         isUsingSavedPhotos = false
         currentPage = 1
@@ -51,79 +57,73 @@ class LocationDetailViewModel {
         
     }
     
-    func downloadNewData(){
+    public func downloadNewPhotos(){
+        
+        currentPage = Int.random(in: 1...totalPages)
+        
         if isUsingSavedPhotos {
             
-            isUsingSavedPhotos = false
+            isUsingSavedPhotos = !isUsingSavedPhotos
             
+            // Deleting saved images from persistent store
             savedPhotos.forEach({
                 dataManager.deleteEntity(entity: $0)
             })
-            
-            searchPhotos()
-            
         }
-        else {
-            searchPhotos()
-        }
+     
+        searchPhotos()
     }
     
-    func searchPhotos(){
-        images.removeAll()
-        flickrPhotos.removeAll()
-        networkManager.searchPhotos(page: currentPage, lat: currentPin.latitude, long: currentPin.longitude, completion: {[weak self] response in
-            guard let response = response else {
-                print("No photos")
-                return
+    private func searchPhotos(){
+        clearData()
+        networkManager.searchPhotos(page: currentPage, lat: currentPin.latitude, long: currentPin.longitude, completion: {[weak self] response, error  in
+            if let response = response, response.photo.count > 0  {
+                self?.totalPages = response.pages
+                self?.flickrPhotos = response.photo
+                self?.delegate?.reloadRows()
             }
-            self?.totalPages = response.pages
-            self?.flickrPhotos = response.photo
-            self?.currentPage = Int.random(in: 1...self!.totalPages)
-            print("Random current page is ",  self?.currentPage, "/\(self?.totalPages)")
-            self?.delegate?.reloadRows()
+            else {
+                 self?.delegate?.showAlert(message: "No photos found!")
+            }
             
+            if let error = error {
+                self?.delegate?.showAlert(message: error)
+            }
         })
         
     }
     
-    func downloadImage(for photo: FlickrPhoto, completion: @escaping (UIImage?)-> Void) {
+    public func downloadImage(for photo: FlickrPhoto, completion: @escaping (UIImage?)-> Void) {
         networkManager.getImage(photo: photo, completion: { data in
             if let unwrappedData = data, let image = UIImage(data: unwrappedData) {
                 self.images.append(image)
                 completion(image)
             }
         })
-        
     }
     
     
-    func savePhotos(){
+    public func savePhotos(){
         images.forEach({
             self.dataManager.savePhoto(with: currentPin, attributes: ["image" : $0.pngData()!])
         })
     }
     
-    func updatePhotos(){
-        
-    }
-    
-    public func deleteImages(at indices: [Int]) {
+    public func deletePhoto(at index: Int) {
         if isUsingSavedPhotos {
-            for index in 0..<indices.count {
-                self.dataManager.deleteEntity(entity: self.savedPhotos[index])
-                self.savedPhotos.remove(at: index)
-            }
-                delegate?.reloadRows()
+            dataManager.deleteEntity(entity: self.savedPhotos[index])
+            savedPhotos.remove(at: index)
         }
-
         else {
-            for index in 0..<indices.count {
-                flickrPhotos.remove(at: index)
-                images.remove(at: index)
-            }
-            delegate?.reloadRows()
+            flickrPhotos.remove(at: index)
+            images.remove(at: index)
         }
-       
+        delegate?.reloadRows()
     }
     
+    private func clearData(){
+        images.removeAll()
+        flickrPhotos.removeAll()
+    }
+
 }

@@ -20,7 +20,7 @@ class Router<EndPoint: EndpointType>: NetworkRouter {
  
     private var task: URLSessionTask?
 
-    func makeRequest(_ request: URLRequest, completion: @escaping NetworkRouterCompletion) {
+    public func makeRequest(_ request: URLRequest, completion: @escaping NetworkRouterCompletion) {
         let session = URLSession.shared
         
         task = session.dataTask(with: request, completionHandler: { data, response, error in
@@ -29,15 +29,13 @@ class Router<EndPoint: EndpointType>: NetworkRouter {
         self.task?.resume()
     }
     
-    func cancel() {
+    public func cancel() {
         self.task?.cancel()
     }
     
-    func buildRequest(from route: EndPoint)-> URLRequest {
+    public func buildRequest(from route: EndPoint)-> URLRequest {
         
-        var request = URLRequest(url: route.baseUrl.appendingPathComponent(route.path),
-                                 cachePolicy: .reloadIgnoringLocalAndRemoteCacheData,
-                                 timeoutInterval: 10.0)
+        var request = URLRequest(url: route.baseUrl.appendingPathComponent(route.path))
         request.httpMethod = route.method.rawValue
         setQueryParameters(queryParameters: route.task, request: &request)
         return request

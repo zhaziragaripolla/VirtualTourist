@@ -16,6 +16,7 @@ enum NetworkResponse: String {
     case failed = "Network request failed."
     case noData = "Response returned with no data to decode."
     case unableToDecode = "We could not decode the response."
+    case connectionFailed = "Please check your internet connection"
 }
 
 enum Result<String>{
@@ -23,20 +24,14 @@ enum Result<String>{
     case failure(String)
 }
 
-protocol CompletionProtocol: class {
-    func completed(data: Data)
-}
-
 class NetworkManager {
-    let router = Router<FlickrApi>()
-    weak var delegate: CompletionProtocol?
+    private let router = Router<FlickrApi>()
     
-    func searchPhotos(page: Int, lat: Float, long: Float, completion: @escaping (PhotoResponse?)-> ()){
+    public func searchPhotos(page: Int, lat: Float, long: Float, completion: @escaping (_ photos: PhotoResponse?, _ error: String?)-> ()){
         let request = router.buildRequest(from: .search(long: long, lat: lat, page: page))
-        print(request.url!)
         router.makeRequest(request) { data, response, error in
-                        if error != nil {
-//                completion(nil, "Please check your network connection.")
+            if error != nil {
+                completion(nil, NetworkResponse.connectionFailed.rawValue)
             }
             
             if let response = response as? HTTPURLResponse {
@@ -44,33 +39,29 @@ class NetworkManager {
                 switch result {
                 case .success:
                     guard let responseData = data else {
-//                        completion(nil, NetworkResponse.noData.rawValue)
+                        completion(nil, NetworkResponse.noData.rawValue)
                         return
                     }
                     do {
                         let decodedData = try JSONDecoder().decode(SearchResponse.self, from: responseData)
-                        completion(decodedData.photos)
+                        completion(decodedData.photos, nil)
 
                     } catch {
-                        print(error)
-//                        completion(nil, NetworkResponse.unableToDecode.rawValue)
+                        completion(nil, NetworkResponse.unableToDecode.rawValue)
                     }
                 case .failure(let networkFailureError):
-                    print("Failure")
-//                    completion(nil, networkFailureError)
+                    completion(nil, networkFailureError)
                 }
             }
         }
     }
     
-    func getImage(photo: FlickrPhoto, completion: @escaping (Data?)->()) {
+    public func getImage(photo: FlickrPhoto, completion: @escaping (Data?)->()) {
         let request = router.buildRequest(from: .getImage(photo: photo))
-        print(request.url!)
         DispatchQueue.global().async {
             let data = try? Data(contentsOf: request.url!)
             DispatchQueue.main.async {
                 completion(data)
-                self.delegate?.completed(data: data!)
             }
         }
     }

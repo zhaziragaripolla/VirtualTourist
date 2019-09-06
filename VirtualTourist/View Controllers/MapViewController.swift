@@ -11,35 +11,55 @@ import MapKit
 
 class MapViewController: UIViewController {
 
-    @IBOutlet weak var mapView: MKMapView!
-    @IBOutlet weak var editItem: UIBarButtonItem!
-    public var viewModel: MapViewModel?
+    private var editItem: UIBarButtonItem!
+    public var viewModel: MapViewModel!
+    
+    private let mapView = MKMapView(frame: .zero)
     
     private var isEditingMode = false {
         didSet {
             configureView()
         }
     }
-    // Create User Defaults to save zoom and location
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
         title = "Virtual tourist"
         mapView.delegate = self
         
+        layoutUI()
         viewModel?.fetchSavedPins()
     }
     
-    func configureView() {
+    fileprivate func layoutUI() {
+        view.addSubview(mapView)
+        mapView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            mapView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            mapView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            mapView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            mapView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+            ])
+        
+        mapView.delegate = self
+        
+        editItem = UIBarButtonItem(title: "Edit", style: .plain, target: self, action: #selector(didTapEditItem(_:)))
+        navigationItem.setRightBarButton(editItem, animated: true)
+        
+        let gestureRecognize = UILongPressGestureRecognizer(target: self, action: #selector(didLongTap(_:)))
+        mapView.addGestureRecognizer(gestureRecognize)
+    }
+
+    private func configureView() {
         editItem.title = isEditingMode ? "Done" : "Edit"
     }
     
-    @IBAction func didTapEditItem(_ sender: Any) {
+    @objc func didTapEditItem(_ sender: Any) {
         isEditingMode = !isEditingMode
     }
     
-    @IBAction func didLongTap(_ gestureRecognizer: UILongPressGestureRecognizer) {
+    @objc func didLongTap(_ gestureRecognizer: UILongPressGestureRecognizer) {
         if gestureRecognizer.state == .began {
             self.becomeFirstResponder()
             
@@ -51,7 +71,6 @@ class MapViewController: UIViewController {
             // Add pins to MapView.
             mapView.addAnnotation(newPin)
             
-            // TODO: use a delegate?
             // Save a pin
             viewModel?.savePin(longitude: Float(coordinate.longitude), latitude: Float(coordinate.latitude))
         }
@@ -79,28 +98,28 @@ extension MapViewController: MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         
         if isEditingMode, let coordinate = view.annotation?.coordinate {
-          viewModel?.deletePin(longitude: Float(coordinate.longitude), latitude: Float(coordinate.latitude))
+            viewModel?.deletePin(longitude: Float(coordinate.longitude), latitude: Float(coordinate.latitude))
             mapView.removeAnnotation(view.annotation!)
         }
         else {
-            if let coordinate = view.annotation?.coordinate,
-                let vm = viewModel?.getDetailView(longitude: Float(coordinate.longitude), latitude: Float(coordinate.latitude)) {
-                let vc = SampleViewController()
-                vc.viewModel = vm
-                navigationController?.pushViewController(vc, animated: true)
-            }
+            showPinPhotos(coordinate: view.annotation!.coordinate)
+        }
+    }
+    
+    // Helper function to instatiate a PhotoAlbumVC to show photos of selected pin.
+    private func showPinPhotos(coordinate: CLLocationCoordinate2D) {
+        if let vm = viewModel.getDetailView(longitude: Float(coordinate.longitude), latitude: Float(coordinate.latitude)) {
+            let vc = PhotoAlbumViewController()
+            vc.viewModel = vm
+            navigationController?.pushViewController(vc, animated: true)
         }
     }
     
 }
 
-extension MapViewController: PinDataServiceProtocol, AlertShowerProtocol {
+extension MapViewController: PinDataServiceProtocol {
     func reloadData() {
         mapView.reloadInputViews()
-    }
-    
-    func showAlert(with message: String) {
-        // TODO: show alert
     }
     
     func savedPinsFetched(pins: [Pin]) {
@@ -108,7 +127,6 @@ extension MapViewController: PinDataServiceProtocol, AlertShowerProtocol {
             let newPin: MKPointAnnotation = MKPointAnnotation()
             let coordinate = CLLocationCoordinate2D(latitude: CLLocationDegrees(pin.latitude), longitude: CLLocationDegrees(pin.longitude))
         
-            print(coordinate.longitude, coordinate.latitude)
             // Set the coordinates.
             newPin.coordinate = coordinate
 
