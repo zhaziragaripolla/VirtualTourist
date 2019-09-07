@@ -60,18 +60,21 @@ class MapViewController: UIViewController {
     }
     
     @objc func didLongTap(_ gestureRecognizer: UILongPressGestureRecognizer) {
+        
+        // Long press gesture causes dropping a new pin.
         if gestureRecognizer.state == .began {
             self.becomeFirstResponder()
             
+            // Getting location of gesture in the map view to initialize a MKPointAnnotation.
             let location = gestureRecognizer.location(in: mapView)
             let coordinate = mapView.convert(location, toCoordinateFrom: mapView)
             let newPin: MKPointAnnotation = MKPointAnnotation()
             newPin.coordinate = coordinate
             
-            // Add pins to MapView.
+            // Add pin to MapView.
             mapView.addAnnotation(newPin)
             
-            // Save a pin
+            // Save a pin to a view model.
             viewModel?.savePin(longitude: Float(coordinate.longitude), latitude: Float(coordinate.latitude))
         }
     }
@@ -97,11 +100,20 @@ extension MapViewController: MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         
+        // View annotation selection is handled depending on Editing mode.
+        
+        // In case of editing mode, selection of annotation pin causes its deletion.
         if isEditingMode, let coordinate = view.annotation?.coordinate {
+            
+            // Deleting Core Data entity is delegated to view model.
             viewModel?.deletePin(longitude: Float(coordinate.longitude), latitude: Float(coordinate.latitude))
+            
+            // MapView is removing selected annotation.
             mapView.removeAnnotation(view.annotation!)
         }
         else {
+            
+            // In non-Editing mode, selection causes showing a new VC with details of selected pin.
             showPinPhotos(coordinate: view.annotation!.coordinate)
         }
     }

@@ -71,12 +71,7 @@ class PhotoAlbumViewController: UIViewController {
     }
     
     private func configureView(){
-        if selectedIndex != nil {
-            deleteItem.isEnabled = true
-        }
-        else {
-            deleteItem.isEnabled = false
-        }
+        deleteItem.isEnabled = selectedIndex != nil
     }
     
     @objc func didTapDeleteItem(_ sender: UIBarButtonItem) {
@@ -116,7 +111,6 @@ extension PhotoAlbumViewController: UICollectionViewDelegate, UICollectionViewDa
                 }
                 cell.activityIndicator.stopAnimating()
             })
-            
         }
       
         return cell

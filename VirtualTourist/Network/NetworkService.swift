@@ -61,7 +61,6 @@ extension FlickrApi: EndpointType {
         case .getImage(let photo):
             return URL(string: "https://farm\(photo.farm).staticflickr.com/\(photo.server)/\(photo.id)_\(photo.secret)_m.jpg")!
         }
-        
     }
 
     var path: String {

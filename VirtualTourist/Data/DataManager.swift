@@ -31,6 +31,8 @@ class DataManager {
         }
     }
     
+    // MARK: Save a photo.
+    
     public func savePhoto(with pin: Pin, attributes: Dictionary<String, Any>){
         let newPhoto = Photo(context: viewContext)
         newPhoto.setValuesForKeys(attributes)
@@ -38,16 +40,22 @@ class DataManager {
         try? viewContext.save()
     }
     
+    // MARK: Update a photo.
+    
     public func updatePhoto(photo: Photo, new attributes: Dictionary<String, Any>) {
         photo.setValuesForKeys(attributes)
         try? viewContext.save()
     }
+    
+    // MARK: Save a pin.
     
     public func savePin(attributes: Dictionary<String, Any>) {
         let newPin = Pin(context: viewContext)
         newPin.setValuesForKeys(attributes)
         try? viewContext.save()
     }
+    
+    // MARK: Fetch Enitites.
     
     public func fetchEntities<T>(entityName: String)-> [T]? where T : NSManagedObject{
         let fetchRequest = NSFetchRequest<T>(entityName: entityName)
@@ -60,10 +68,14 @@ class DataManager {
         return result
     }
     
+    // MARK: Delete.
+    
     public func deleteEntity<T>(entity: T) where T : NSManagedObject {
         viewContext.delete(entity)
         try? viewContext.save()
     }
+    
+    // MARK: Find a pin.
     
     public func findPin(latitude: Float, longitude: Float)-> [Pin]? {
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Pin")
@@ -78,7 +90,6 @@ class DataManager {
         return result
     }
 
-    
     private func autoSaveViewContext(interval: TimeInterval = 30) {
         print("autosaving")
         
