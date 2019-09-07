@@ -23,6 +23,7 @@
 		56755104231D547600B319F9 /* FlickrCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56755103231D547600B319F9 /* FlickrCollectionViewCell.swift */; };
 		56755106231E3EA700B319F9 /* LocationDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56755105231E3EA700B319F9 /* LocationDetailViewModel.swift */; };
 		56C617A723200E9C00A9932B /* DataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56C617A623200E9C00A9932B /* DataManager.swift */; };
+		56C617A923238A7600A9932B /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56C617A823238A7500A9932B /* Constants.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +45,7 @@
 		56755103231D547600B319F9 /* FlickrCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlickrCollectionViewCell.swift; sourceTree = "<group>"; };
 		56755105231E3EA700B319F9 /* LocationDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationDetailViewModel.swift; sourceTree = "<group>"; };
 		56C617A623200E9C00A9932B /* DataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataManager.swift; sourceTree = "<group>"; };
+		56C617A823238A7500A9932B /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,6 +94,7 @@
 			isa = PBXGroup;
 			children = (
 				567550F6231CCFB100B319F9 /* APIKey.swift */,
+				56C617A823238A7500A9932B /* Constants.swift */,
 				567550FD231D158F00B319F9 /* SearchResponse.swift */,
 				567550F4231CC67300B319F9 /* NetworkService.swift */,
 				567550F9231CFDF200B319F9 /* Router.swift */,
@@ -219,6 +222,7 @@
 				56755104231D547600B319F9 /* FlickrCollectionViewCell.swift in Sources */,
 				567550E6231A8D5400B319F9 /* VirtualTourist.xcdatamodeld in Sources */,
 				567550F7231CCFB100B319F9 /* APIKey.swift in Sources */,
+				56C617A923238A7600A9932B /* Constants.swift in Sources */,
 				567550F5231CC67300B319F9 /* NetworkService.swift in Sources */,
 				567550FE231D158F00B319F9 /* SearchResponse.swift in Sources */,
 			);
