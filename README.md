@@ -32,21 +32,29 @@ The farm, server, id, and secret are used to build the image path. [Flickr Photo
 
 ## Class details
 The project consists of 2 View Controllers: MapViewController and PhotoAlbumViewController.
-**MapViewController**:
-  Objective: To incorporate map view and allow user to specify location with MapKit framework imported.  Tapping a pin redirects to PhotoAlbumVC. 
-**PhotoAlbumViewController**:
-  Objective: To feed CollectionView with photos downloaded from the FlickrAPI. All photos are saved to memory by using Core Data framework.
+- **MapViewController**:
+  </p>Objective: To incorporate map view and allow user to specify location with MapKit framework imported.  Tapping a pin redirects to PhotoAlbumVC. </p>
+- **PhotoAlbumViewController**:
+  <p>Objective: To feed CollectionView with photos downloaded from the FlickrAPI. All photos are saved to memory by using Core Data framework.</p>
   
   The application uses MVVM architecture.
-**MapViewModel**:
-  Works with Data Manager to retrieve saved pins and casts them as array of Pins. Talks to MapVC using POP to send requested data. Creates an instance of LocationDetailViewModel with specified location and sends back to MapVC, which pushes a PhotoAlbumVC with a LocationDetailViewModel injected.
-**LocationDetailVewModel**:
-  Works with both Data Manager and Network Manager. Data Manager is used to retrieve saved photos associated with location. If there is no saved data, it initiates a network call to download photos using Network Manager. Also, uses POP to talk to PhotoAlbumVC.
+- **MapViewModel**:
+  <p>Works with Data Manager to retrieve saved pins and casts them as array of Pins. Talks to MapVC using POP to send requested data. Creates an instance of LocationDetailViewModel with specified location and sends back to MapVC, which pushes a PhotoAlbumVC with a LocationDetailViewModel injected.</p>
+- **LocationDetailVewModel**:
+  <p>Works with both Data Manager and Network Manager. Data Manager is used to retrieve saved photos associated with location. If there is no saved data, it initiates a network call to download photos using Network Manager. Also, uses POP to talk to PhotoAlbumVC.</p>
   
   There are 2 services: DataManager and NetworkManager:
-**DataManager**:
-  This class is built around Core Data. Implements CRUD to manipulate models.
-**NetworkManager**:
-  This class is responsible for network calls and handles success and failure results. Has an instance of **Router** with specified EndpointType because Router is generic class. It is aimed to make a request with URLSession. In this project, being Router as generic function is not really useful, but made for learning purposes. **FlickrAPI** is enum conforms to protocol Endpoint and specifies URLs for cases: search() and getImage(). 
+- **DataManager**:
+  <p>This class is built around Core Data. Implements CRUD to manipulate models.</p>
+- **NetworkManager**:
+  <p>This class is responsible for network calls and handles success and failure results. Has an instance of Router with specified EndpointType because Router is generic class. </p>
+  <p>It is aimed to make a request with URLSession. In this project, being Router as generic function is not really useful, but made for learning purposes.</p>
+  <p> **FlickrAPI** is enum conforms to protocol Endpoint and specifies URLs for cases: search() and getImage(). </p>
   
 ## Screenshots
+
+<p align="center">
+<img src="https://github.com/zhaziragaripolla/images/blob/master/VirtualTourist1.png" width="160"  title="vt1">
+<img src="https://github.com/zhaziragaripolla/images/blob/master/VirtualTourist2.png" width="160" title="MapView">
+
+</p>
