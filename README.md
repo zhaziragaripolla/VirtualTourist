@@ -4,9 +4,12 @@ Virtual Tourist application is a part of Udacity Nanodegree program. The project
 <p>The Virtual Tourist app downloads and stores images from Flickr. The app allows users to drop pins on a map, as if they were stops on a tour. Users will then be able to download pictures for the location and persist both the pictures, and the association of the pictures with the pin.
 
 ## Getting started
-- Clone the repo and run VirtualTourist.xcodeproj
-- Get an API Key from [FlickrAPI](https://www.flickr.com/services/api/misc.api_keys.html)
+- Clone the repo and run VirtualTourist.xcodeproj.
+- Get an API Key from [FlickrAPI](https://www.flickr.com/services/api/misc.api_keys.html).
 - Paste your generated API Key to file *APIKey.swift*
+- Launch the project.
+- Long press on the map to drop a pin.
+- Tap a pin to download photos from this location.
 
 ## Flickr API Documentation
 The application uses the endpoint [flickr.photos.search](https://www.flickr.com/services/api/flickr.photos.search.html) to search images with specific geolocation.
@@ -49,7 +52,7 @@ The project consists of 2 View Controllers: MapViewController and PhotoAlbumView
 - **NetworkManager**:
   <p>This class is responsible for network calls and handles success and failure results. Has an instance of Router with specified EndpointType because Router is generic class. </p>
   <p>It is aimed to make a request with URLSession. In this project, being Router as generic function is not really useful, but made for learning purposes.</p>
-  <p> **FlickrAPI** is enum conforms to protocol Endpoint and specifies URLs for cases: search() and getImage(). </p>
+  <p> FlickrAPI is enum conforms to protocol Endpoint and specifies URLs for cases: search() and getImage(). </p>
   
 ## Screenshots
 
