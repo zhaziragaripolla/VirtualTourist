@@ -4,7 +4,7 @@ Virtual Tourist application is a part of Udacity Nanodegree program. The project
 <p>The Virtual Tourist app downloads and stores images from Flickr. The app allows users to drop pins on a map, as if they were stops on a tour. Users will then be able to download pictures for the location and persist both the pictures, and the association of the pictures with the pin.
 
 ## Getting started
-- Clone the repo and run FlickrSearch.xcodeproj
+- Clone the repo and run VirtualTourist.xcodeproj
 - Get an API Key from [FlickrAPI](https://www.flickr.com/services/api/misc.api_keys.html)
 - Paste your generated API Key to file *APIKey.swift*
 
@@ -31,6 +31,22 @@ The farm, server, id, and secret are used to build the image path. [Flickr Photo
 - Response object is the image file.
 
 ## Class details
-The application uses MVVM architecture. UML Diagram could be found [here]()
-
+The project consists of 2 View Controllers: MapViewController and PhotoAlbumViewController.
+**MapViewController**:
+  Objective: To incorporate map view and allow user to specify location with MapKit framework imported.  Tapping a pin redirects to PhotoAlbumVC. 
+**PhotoAlbumViewController**:
+  Objective: To feed CollectionView with photos downloaded from the FlickrAPI. All photos are saved to memory by using Core Data framework.
+  
+  The application uses MVVM architecture.
+**MapViewModel**:
+  Works with Data Manager to retrieve saved pins and casts them as array of Pins. Talks to MapVC using POP to send requested data. Creates an instance of LocationDetailViewModel with specified location and sends back to MapVC, which pushes a PhotoAlbumVC with a LocationDetailViewModel injected.
+**LocationDetailVewModel**:
+  Works with both Data Manager and Network Manager. Data Manager is used to retrieve saved photos associated with location. If there is no saved data, it initiates a network call to download photos using Network Manager. Also, uses POP to talk to PhotoAlbumVC.
+  
+  There are 2 services: DataManager and NetworkManager:
+**DataManager**:
+  This class is built around Core Data. Implements CRUD to manipulate models.
+**NetworkManager**:
+  This class is responsible for network calls and handles success and failure results. Has an instance of **Router** with specified EndpointType because Router is generic class. It is aimed to make a request with URLSession. In this project, being Router as generic function is not really useful, but made for learning purposes. **FlickrAPI** is enum conforms to protocol Endpoint and specifies URLs for cases: search() and getImage(). 
+  
 ## Screenshots
